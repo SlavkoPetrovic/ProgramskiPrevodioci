@@ -1,0 +1,12 @@
+program
+begin
+
+
+char $g:='a';
+
+int $caki2:= 0x312A;
+float $sf1 := 3.32E+11
+bool tEst := false;
+
+$caki2 => tEst
+end
