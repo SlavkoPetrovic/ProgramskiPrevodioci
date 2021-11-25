@@ -70,6 +70,7 @@ or { return new Yytoken( sym.OR,yytext(), yyline, yycolumn ); }
 //identifikatori
 (({slovo}|[$])({slovo}|{cifra}|[$])*) { return new Yytoken(sym.ID, yytext(), yyline, yycolumn ); }
 
+
 //konstante
 (\'({slovo}{1}|{cifra}{1}|{znak}{1})\') { return new Yytoken( sym.CHAR, yytext(), yyline, yycolumn ); }
 ((([0x]{1}{hex}+)|[0]{1}{cifra}+)|({cifra}+)) {return new Yytoken(sym.INTEGER, yytext(), yyline, yycolumn); }

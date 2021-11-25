@@ -14,7 +14,7 @@ public class sym {
 	public final static int SEMICOLON = 10;
 	public final static int COMMA = 11;
 	public final static int COLON = 12;
-	public final static int BOOL = 13;
+	public final static int BOOLEAN = 13;
 	public final static int REAL = 14;
 	public final static int CASE = 15;
 	public final static int OR = 16;

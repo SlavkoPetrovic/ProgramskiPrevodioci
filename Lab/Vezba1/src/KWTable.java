@@ -14,7 +14,7 @@ public class KWTable {
 		mTable.put("integer",new Integer(sym.INTEGER));
 		mTable.put("char",new Integer(sym.CHAR));
 		mTable.put("real",new Integer(sym.REAL));
-		mTable.put("bool",new Integer(sym.BOOL));
+		mTable.put("bool",new Integer(sym.BOOLEAN));
 		mTable.put("select",new Integer(sym.SELECT));
 		mTable.put("case",new Integer(sym.CASE));
 		

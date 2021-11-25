@@ -2,11 +2,16 @@ program
 begin
 
 
-char $g:='a';
+$g: char;
+$caki2: integer;
+$sf1 :float;
+tEst :boolean;
+$g:='a';
+$caki2:= 12;
+$sf1:=12.3;
+test:=true;
 
-int $caki2:= 0x312A;
-float $sf1 := 3.32E+11
-bool tEst := false;
-
-$caki2 => tEst
+select begin case 
+	$caki2>$sf1 => $caki2:= 13;
+	end
 end
