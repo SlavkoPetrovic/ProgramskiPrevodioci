@@ -4,7 +4,7 @@ begin
 
 $g: char;
 $caki2: integer;
-$sf1 :float;
+$sf1 :real;
 tEst :boolean;
 $g:='a';
 $caki2:= 12;
@@ -14,4 +14,6 @@ test:=true;
 select begin case 
 	$caki2>$sf1 => $caki2:= 13;
 	end
+	
+|*komentar*|
 end
