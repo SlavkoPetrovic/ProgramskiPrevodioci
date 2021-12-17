@@ -1,0 +1,346 @@
+//import sekcija
+
+import java_cup.runtime.*;
+import java.io.*;
+
+parser code {:
+
+   public int errNo = 0;
+   
+   public static void main( String[] args )
+   {
+      try
+	  {
+		   FileReader file = new FileReader( args[0] );
+		   Scanner scanner = new MPLexer( file );
+		   MPParser parser = new MPParser( scanner );
+		   parser.parse();
+		   if ( parser.errNo == 0 )
+		      System.out.println( "Analiza zavrsena. U kodu nema gresaka." );
+		   else
+		      System.out.println( "Analiza zavrsena. Broj gresaka: " + parser.errNo );
+	  }
+	  catch( Exception e )
+	  {
+		   e.printStackTrace();
+	  }
+   }
+   
+   public void syntax_error(Symbol cur_token)
+   {
+   	  
+   }
+   
+   public void report_error(String message, Object info)
+   {
+   	   System.out.print( message );
+   }
+   
+   public int getLine()
+   {
+   	  return (( MPLexer) getScanner()).getLine();
+   }
+:};
+
+// Terminali
+terminal PROGRAM, DOT, BEGIN, END, COLON, SEMICOLON, COMMA, ID, INTEGER, CHAR, REAL,BOOLEAN;
+terminal ASSIGN, SELECT, CASE, ARROW, OR, AND, LT, LE, EQ, NE, GT, GE;
+terminal CONST, LEFTPAR, RIGHTPAR;
+
+// Neterminali
+non terminal Program, Block, Variables, Declaration, NameList, Type, StatementList, Statement, SelectStatement, CaseList, Case;
+non terminal Expression, AndExpression, RelExpression, RelOp, Term;
+
+//Precedences added by Eclipse plugin
+precedence nonassoc error;	// Inserted by Eclipse plugin
+
+
+
+
+// Gramatika
+
+Program ::= PROGRAM Block DOT 
+{:
+    System.out.println("Smena 1");
+:}
+|PROGRAM Block error
+{:
+	System.out.println( "Nedostaje '.' na kraju programa" );
+    parser.errNo++;
+:}
+|PROGRAM error
+{:
+	System.out.println( "Nedostaje blok programa" );
+    parser.errNo++;
+:}
+|error
+{:
+	System.out.println( "Nedostaje kljucna rec program" );
+    parser.errNo++;
+:};
+
+Block ::= BEGIN Variables StatementList END
+{:
+    System.out.println("Smena 2");
+:}
+| BEGIN Variables StatementList error
+{:
+	System.out.println( "Nedostaje kljucna rec end" );
+    parser.errNo++;
+:}
+;
+
+Variables ::= Variables Declaration
+{:
+    System.out.println("Smena 3");
+:}
+|
+{:
+	System.out.println("Smena 4");
+:};
+
+Declaration ::= NameList COLON Type SEMICOLON
+{:
+    System.out.println("Smena 5");
+:}
+|NameList COLON Type error
+{:
+	System.out.println( "Nedostaje ';'" );
+    parser.errNo++;
+:}
+|NameList COLON error
+{:
+	System.out.println( "Nedostaje Type Promenljive" );
+    parser.errNo++;
+:}
+|NameList error
+{:
+	System.out.println( "Nedostaje ':'" );
+    parser.errNo++;
+:}
+;
+
+NameList ::= NameList COMMA ID
+{:
+    System.out.println("Smena 6");
+:}
+| ID
+{:
+    System.out.println("Smena 7");
+:}
+|NameList COMMA error
+{:
+	System.out.println( "Nedostaje identifikator" );
+    parser.errNo++;
+:}
+|NameList error
+{:
+	System.out.println( "Nedostaje ','" );
+    parser.errNo++;
+:};
+
+Type ::= INTEGER
+{:
+    System.out.println("Smena 8");
+:}
+| CHAR
+{:
+    System.out.println("Smena 9");
+:}
+| REAL
+{:
+    System.out.println("Smena 10");
+:}
+| BOOLEAN
+{:
+    System.out.println("Smena 11");
+:};
+
+StatementList ::= Statement
+{:
+    System.out.println("Smena 12");
+:}
+| StatementList Statement
+{:
+    System.out.println("Smena 13");
+:};
+
+Statement ::= SelectStatement
+{:
+    System.out.println("Smena 14");
+:}
+| ID ASSIGN Expression SEMICOLON
+{:
+    System.out.println("Smena 15");
+:}
+| Block
+{:
+    System.out.println("Smena 16");
+:}
+| ID ASSIGN Expression error
+{:
+   System.out.println( "Nedostaje ';'" );
+    parser.errNo++;
+:}
+| ID ASSIGN error
+{:
+   System.out.println( "Nedostaje izraz" );
+    parser.errNo++;
+:}
+| ID error
+{:
+   System.out.println( "Nedostaje ':='" );
+    parser.errNo++;
+:};
+
+SelectStatement ::= SELECT  BEGIN CaseList END 
+{:
+    System.out.println("Smena 17");
+:}
+| SELECT  BEGIN CaseList error 
+{:
+   System.out.println( "Nedostaje kljucna rec end");
+    parser.errNo++;
+:}
+| SELECT  BEGIN  error 
+{:
+   System.out.println( "Nedostaje CaseList");
+    parser.errNo++;
+:}
+| SELECT error 
+{:
+   System.out.println( "Nedostaje kljucna rec begin");
+    parser.errNo++;
+:};
+
+CaseList ::= CaseList Case
+{:
+    System.out.println("Smena 18");
+:}
+| Case
+{:
+    System.out.println("Smena 19");
+:};
+
+Case ::= CASE Expression ARROW Statement
+{:
+    System.out.println("Smena 20");
+:}
+| CASE Expression ARROW error 
+{:
+   System.out.println( "Nedostaje Statement");
+    parser.errNo++;
+:}
+| CASE Expression error 
+{:
+   System.out.println( "Nedostaje '=>'");
+    parser.errNo++;
+:}
+| CASE  error 
+{:
+   System.out.println( "Nedostaje expression");
+    parser.errNo++;
+:};
+
+Expression ::= Expression OR AndExpression
+{:
+    System.out.println("Smena 21");
+:}
+| AndExpression
+{:
+    System.out.println("Smena 22");
+:}
+| Expression OR error 
+{:
+   System.out.println( "Nedostaje AndExpression");
+    parser.errNo++;
+:};
+
+AndExpression ::= AndExpression AND RelExpression
+{:
+    System.out.println("Smena 23");
+:}
+| RelExpression
+{:
+    System.out.println("Smena 24");
+:}
+| AndExpression AND error 
+{:
+   System.out.println( "Nedostaje RelExpression");
+    parser.errNo++;
+:}
+| AndExpression error 
+{:
+   System.out.println( "Nedostaje AND!");
+    parser.errNo++;
+:};
+
+RelExpression ::= Term RelOp Term
+{:
+    System.out.println("Smena 25");
+:}
+| Term
+{:
+    System.out.println("Smena 26");
+:}
+| Term RelOp error 
+{:
+   System.out.println( "Nedostaje term");
+    parser.errNo++;
+:}
+| Term  error 
+{:
+   System.out.println( "Nedostaje RelOp");
+    parser.errNo++;
+:};
+
+RelOp ::= LT
+{:
+    System.out.println("Smena 27");
+:}
+| LE
+{:
+    System.out.println("Smena 28");
+:}
+| EQ
+{:
+    System.out.println("Smena 29");
+:}
+| NE
+{:
+    System.out.println("Smena 30");
+:}
+| GT
+{:
+    System.out.println("Smena 31");
+:}
+| GE
+{:
+    System.out.println("Smena 32");
+:};
+
+Term  ::= ID
+{:
+    System.out.println("Smena 33");
+:}
+| CONST
+{:
+    System.out.println("Smena 34");
+:}
+| LEFTPAR Expression RIGHTPAR
+{:
+    System.out.println("Smena 35");
+:}
+| LEFTPAR Expression error
+{:
+     System.out.println( "Nedostaje )");
+    parser.errNo++;
+:}
+| LEFTPAR  error
+{:
+     System.out.println( "Nedostaje Expression");
+    parser.errNo++;
+:};
+
+
+

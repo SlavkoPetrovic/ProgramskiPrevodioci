@@ -1,19 +1,5 @@
-program
-begin
-
-
-$g: char;
-$caki2: integer;
-$sf1 :real;
-tEst :boolean;
-$g:='a';
-$caki2:= 12;
-$sf1:=12.3;
-test:=true;
-
-select begin case 
-	$caki2>$sf1 => $caki2:= 13;
+select begin
+	case $num1 == $num2 => $num1:=9;
 	end
-	
-|*komentar*|
-end
+
+|* ima neki problem ne ucitava mi sve kako treba *|

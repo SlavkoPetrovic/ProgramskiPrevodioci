@@ -1,0 +1,190 @@
+import java_cup.runtime.*;
+import java.io.*;
+
+parser code {:
+    public static void main( String[] args )
+    {
+        try
+        {
+            FileReader file = new FileReader( args[0] );
+            Scanner scanner = new MPLexer( file );
+            MPParser parser = new MPParser( scanner );
+			Symbol syntax_tree = parser.parse();
+        }
+        catch( Exception e )
+        {
+            e.printStackTrace();
+        }
+    }
+:};
+
+// Terminali
+terminal PROGRAM, DOT, BEGIN, END, COLON, SEMICOLON, COMMA, ID, INTEGER, CHAR, REAL,BOOLEAN;
+terminal ASSIGN, SELECT, CASE, ARROW, OR, AND, LT, LE, EQ, NE, GT, GE;
+terminal CONST, LEFTPAR, RIGHTPAR;
+
+// Neterminali
+non terminal Program, Block, Variables, Declaration, NameList, Type, StatementList, Statement, SelectStatement, CaseList, Case;
+non terminal Expression, AndExpression, RelExpression, RelOp, Term;
+
+
+
+
+// Gramatika
+
+Program ::= PROGRAM Block DOT 
+{:
+    System.out.println("Smena 1");
+:};
+
+Block ::= BEGIN Variables StatementList END
+{:
+    System.out.println("Smena 2");
+:};
+
+Variables ::= Variables Declaration
+{:
+    System.out.println("Smena 3");
+:}
+|
+{:
+	System.out.println("Smena 4");
+:};
+
+Declaration ::= NameList COLON Type SEMICOLON
+{:
+    System.out.println("Smena 5");
+:};
+
+NameList ::= NameList COMMA ID
+{:
+    System.out.println("Smena 6");
+:}
+| ID
+{:
+    System.out.println("Smena 7");
+:};
+
+Type ::= INTEGER
+{:
+    System.out.println("Smena 8");
+:}
+| CHAR
+{:
+    System.out.println("Smena 9");
+:}
+| REAL
+{:
+    System.out.println("Smena 10");
+:}
+| BOOLEAN
+{:
+    System.out.println("Smena 11");
+:};
+
+StatementList ::= Statement
+{:
+    System.out.println("Smena 12");
+:}
+| StatementList Statement
+{:
+    System.out.println("Smena 13");
+:};
+
+Statement ::= SelectStatement
+{:
+    System.out.println("Smena 14");
+:}
+| ID ASSIGN Expression SEMICOLON
+{:
+    System.out.println("Smena 15");
+:}
+| Block
+{:
+    System.out.println("Smena 16");
+:};
+
+SelectStatement ::= SELECT  BEGIN CaseList END 
+{:
+    System.out.println("Smena 17");
+:};
+
+CaseList ::= CaseList Case
+{:
+    System.out.println("Smena 18");
+:}
+| Case
+{:
+    System.out.println("Smena 19");
+:};
+
+Case ::= CASE Expression ARROW Statement
+{:
+    System.out.println("Smena 20");
+:};
+
+Expression ::= Expression OR AndExpression
+{:
+    System.out.println("Smena 21");
+:}
+| AndExpression
+{:
+    System.out.println("Smena 22");
+:};
+
+AndExpression ::= AndExpression AND RelExpression
+{:
+    System.out.println("Smena 23");
+:}
+| RelExpression
+{:
+    System.out.println("Smena 24");
+:};
+
+RelExpression ::= Term RelOp Term
+{:
+    System.out.println("Smena 25");
+:}
+| Term
+{:
+    System.out.println("Smena 26");
+:};
+
+RelOp ::= LT
+{:
+    System.out.println("Smena 27");
+:}
+| LE
+{:
+    System.out.println("Smena 28");
+:}
+| EQ
+{:
+    System.out.println("Smena 29");
+:}
+| NE
+{:
+    System.out.println("Smena 30");
+:}
+| GT
+{:
+    System.out.println("Smena 31");
+:}
+| GE
+{:
+    System.out.println("Smena 32");
+:};
+
+Term  ::= ID
+{:
+    System.out.println("Smena 33");
+:}
+| CONST
+{:
+    System.out.println("Smena 34");
+:}
+| LEFTPAR Expression RIGHTPAR
+{:
+    System.out.println("Smena 35");
+:};
+
