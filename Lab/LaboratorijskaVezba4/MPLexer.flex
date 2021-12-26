@@ -66,10 +66,10 @@ or { return new Symbol( sym.OR); }
 "program" { return new Symbol( sym.PROGRAM );	}
 "begin" { return new Symbol( sym.BEGIN );	}
 "end" { return new Symbol( sym.END );	}
-"integer" { return new Symbol( sym.INTCONST );	}
-"char" { return new Symbol( sym.CHARCONST );	}
-"real" { return new Symbol( sym.REALCONST );	}
-"boolean" { return new Symbol( sym.BOOLCONST );	}
+"integer" { return new Symbol( sym.INTEGER );	}
+"char" { return new Symbol( sym.CHAR );	}
+"real" { return new Symbol( sym.REAL );	}
+"boolean" { return new Symbol( sym.BOOLEAN );	}
 "select" { return new Symbol( sym.SELECT );	}
 "case" { return new Symbol( sym.CASE );	}
 
@@ -84,7 +84,7 @@ or { return new Symbol( sym.OR); }
 
 
 
-((([0x]{1}{hex}+)|[0]{1}{cifra}+)|({cifra}+)) {return new Symbol(sym.INTCONST, (new Integer( yytext() ) )); }
+((([0x]{1}{hex}+)|[0]{1}{cifra}+)|({cifra}+)) { return new Symbol( sym.INTCONST, new Integer( yytext() ) ); }
 (({cifra}+\.({cifra}+)?(E(\+|\-)?{cifra}+)?)|(\.{cifra}+(E(\+|\-)?{cifra}+)?)) { return new Symbol(sym.REALCONST, (new Double( yytext()) ) ); }
 (\'({slovo}{1}|{cifra}{1}|{znak}{1})\') { return new Symbol( sym.CHARCONST, new Character( yytext().charAt(1) )); }
 

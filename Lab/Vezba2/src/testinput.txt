@@ -1,5 +1,5 @@
 select begin
-	case $num1 == $num2 => $num1:=9;
+	case ($num1 == $num2) => $num1:=9;
 	end
 
 |* ima neki problem ne ucitava mi sve kako treba *|

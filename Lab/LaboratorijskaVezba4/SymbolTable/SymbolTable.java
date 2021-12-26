@@ -14,28 +14,32 @@ public class SymbolTable {
 		types = new Type( "unknown", Type.UNKNOWN, null);
 		types = new Type( "char", Type.CHARACTER, types );
 		types = new Type( "integer", Type.INTEGER, types );
-		types = new Type( "boolean", Type.BOOLEAN, types );
 		types = new Type( "real", Type.DOUBLE, types );
+		types = new Type( "boolean", Type.BOOLEAN, types );
 		variables = null;
 	}
 	
-	public boolean addVar( String name, Type type )
+	public boolean addVar( String name, Type type, int scope )
 	{
-		Variable existing = this.getVar( name );
+		Variable existing = this.getVar( name, scope );
 		if ( existing != null )
+		{
 			return false;
-		variables = new Variable( name, type, variables );
+		}
+		variables = new Variable( name, type, scope, variables );
 		return true;
 	}
 	
-	public Variable getVar( String name )
+	public Variable getVar( String name, int scope )
 	{
-		SymbolNode current = variables;
+		Variable current = (Variable) variables;
 		while ( current != null && 
-				current.name.compareTo( name ) != 0 )
-			current = current.next;
+				(current.name.compareTo( name ) != 0 ||
+						current.scope != scope ))
+			current = (Variable) current.next;
 		return ( Variable ) current;
 	}
+	
 	
 	public Type getType(String typeName)
 	{

@@ -85,7 +85,7 @@ init with
 // Terminali
 terminal PROGRAM, DOT,INTEGER,BOOLEAN,REAL,CHAR, BEGIN, END, COLON, SEMICOLON, COMMA;
 terminal ASSIGN, SELECT, CASE, ARROW, OR, AND, LT, LE, EQ, NE, GT, GE;
-terminal CONST, LEFTPAR, RIGHTPAR;
+terminal LEFTPAR, RIGHTPAR;
 terminal Integer INTCONST;
 terminal String ID;
 terminal Double REALCONST;
@@ -101,18 +101,41 @@ non terminal ArrayList NameList;
 non terminal Constant Konstanta;
 
 
-
+start with Program;
 
 // Gramatika
 Program ::= PROGRAM Block DOT 
 {:
     System.out.println("Smena 1");
+:}
+|PROGRAM Block error
+{:
+	System.out.println( "Nedostaje '.' na kraju programa" );
+    parser.errNo++;
+:}
+|PROGRAM error
+{:
+	System.out.println( "Nedostaje blok programa" );
+    parser.errNo++;
+:}
+|error
+{:
+	System.out.println( "Nedostaje kljucna rec program" );
+    parser.errNo++;
 :};
 
 Block ::= BEGIN Variables StatementList END
 {:
     System.out.println("Smena 2");
-:};
+parser.scope++;
+	
+:}
+| BEGIN Variables StatementList error
+{:
+	System.out.println( "Nedostaje kljucna rec end" );
+    parser.errNo++;
+:}
+;
 
 Variables ::= Variables Declaration
 {:
@@ -129,14 +152,39 @@ Declaration ::= NameList:niz COLON Tip:t SEMICOLON
 	for(int i = 0; i < niz.size(); i++)
     {
     	String ime = (String) niz.get(i);
-        if(!parser.symbolTable.addVar(ime, t))
+        if(!parser.symbolTable.addVar(ime, t,parser.scope))
 		{
         	System.out.println("Greska u liniji "+parser.getLine()+": "+"Promenljiva "+ime+" je vec deklarisana.");
             parser.errNo++;
 		}
 	}
 
-:};
+:}
+|NameList:niz COLON Tip:t error
+{:
+	System.out.println( "Nedostaje ';'" );
+	for(int i = 0; i < niz.size(); i++)
+    {
+    	String ime = (String) niz.get(i);
+        if(!parser.symbolTable.addVar(ime, t,parser.scope))
+		{
+        	System.out.println("Greska u liniji "+parser.getLine()+": "+"Promenljiva "+ime+" je vec deklarisana.");
+            parser.errNo++;
+		}
+	}
+    parser.errNo++;
+:}
+|NameList COLON error
+{:
+	System.out.println( "Nedostaje Type Promenljive" );
+    parser.errNo++;
+:}
+|NameList error
+{:
+	System.out.println( "Nedostaje ':'" );
+    parser.errNo++;
+:}
+;
 
 NameList ::= NameList:niz COMMA ID:ime
 {:
@@ -149,6 +197,16 @@ NameList ::= NameList:niz COMMA ID:ime
     System.out.println("Smena 7");
 	RESULT = new ArrayList();
 	RESULT.add( ime );
+:}
+|NameList COMMA error
+{:
+	System.out.println( "Nedostaje identifikator" );
+    parser.errNo++;
+:}
+|NameList error
+{:
+	System.out.println( "Nedostaje ','" );
+    parser.errNo++;
 :};
 
 Tip ::= INTEGER
@@ -164,7 +222,7 @@ Tip ::= INTEGER
 | REAL
 {:
     System.out.println("Smena 10");
-	RESULT = parser.symbolTable.getType("double");
+	RESULT = parser.symbolTable.getType("real");
 :}
 | BOOLEAN
 {:
@@ -184,19 +242,70 @@ StatementList ::= Statement
 Statement ::= SelectStatement
 {:
     System.out.println("Smena 14");
+	
 :}
-| ID ASSIGN Expression SEMICOLON
+| ID:ime ASSIGN Expression:i SEMICOLON
 {:
     System.out.println("Smena 15");
+	
+	Variable var = parser.symbolTable.getVar(ime,parser.scope);
+	if(var == null)
+	{
+		System.out.println("Greska u liniji "+parser.getLine()+ ": " +"promenljiva "+ime+" nije deklarisana.");
+		parser.errNo++;
+	}
+	else
+	{
+		var.last_def = parser.getLine();
+		if(var.type.tkind == 4 && var.type.tkind > i.tkind)
+															//Broj u Type.java za bool je 4, sto znaci bool moze samo bool
+		{	
+			System.out.println("Greska u liniji "+parser.getLine()+": "+"Neslaganje tipa u naredbi dodele.");
+			parser.errNo++;			
+		}
+		else if(var.type.tkind != i.tkind && var.type.tkind > i.tkind )
+																	//Ukoliko nisu istog tipa i levi je veci tip, vrsiti konverziju desnog tj. nizeg u visi
+		{
+			System.out.println("Izvrsena je konverzacija nizeg u visi tip");
+			//var.type.tkind=	i.tkind;
+		} 
+	}
 :}
 | Block
 {:
     System.out.println("Smena 16");
-:};
+:}
+| ID ASSIGN Expression error
+{:
+   System.out.println( "Nedostaje ';'" );
+    parser.errNo++;
+:}
+| ID ASSIGN error
+{:
+   System.out.println( "Nedostaje izraz" );
+    parser.errNo++;
+:}
+;
 
-SelectStatement ::= SELECT  BEGIN CaseList END 
+SelectStatement ::= SELECT BEGIN CaseList END 
 {:
     System.out.println("Smena 17");
+	parser.scope--;
+:}
+| SELECT  BEGIN CaseList error 
+{:
+   System.out.println( "Nedostaje kljucna rec end");
+    parser.errNo++;
+:}
+| SELECT  BEGIN  error 
+{:
+   System.out.println( "Nedostaje CaseList");
+    parser.errNo++;
+:}
+| SELECT error 
+{:
+   System.out.println( "Nedostaje kljucna rec begin");
+    parser.errNo++;
 :};
 
 CaseList ::= CaseList Case
@@ -208,28 +317,76 @@ CaseList ::= CaseList Case
     System.out.println("Smena 19");
 :};
 
-Case ::= CASE Expression ARROW Statement
+Case ::= CASE Expression:e ARROW Statement
 {:
     System.out.println("Smena 20");
+	System.out.println("ekind =" +e.kind + " type.bool= " +Type.BOOLEAN +e.name);
+	if(e.name != "boolean")
+	{
+		System.out.println("Greska u liniji " +parser.getLine() + ": " +"Izraz mora biti tipa boolean a trenutni izraz je tipa: " + e.name);
+		parser.errNo++;
+	}
+	RESULT = parser.symbolTable.getType("boolean");
+:}
+| CASE Expression ARROW error 
+{:
+   System.out.println( "Nedostaje Statement");
+    parser.errNo++;
+:}
+| CASE Expression error 
+{:
+   System.out.println( "Nedostaje '=>'");
+    parser.errNo++;
+:}
+| CASE  error 
+{:
+   System.out.println( "Nedostaje expression");
+    parser.errNo++;
 :};
 
-Expression ::= Expression OR AndExpression
+
+Expression ::= Expression:e1 OR AndExpression:e2
 {:
     System.out.println("Smena 21");
+	if(e1.tkind != Type.BOOLEAN || e2.tkind != Type.BOOLEAN)
+	{
+		System.out.println("Greska u liniji "+parser.getLine()+": "+"Operandi u logickom izrazu mogu biti samo tipa boolean.");
+		parser.errNo++;
+	}
+	RESULT = parser.symbolTable.getType("boolean");    
 :}
-| AndExpression
+| AndExpression:e
 {:
     System.out.println("Smena 22");
+	RESULT=e.type;
+:}
+| Expression OR error 
+{:
+   System.out.println( "Nedostaje AndExpression");
+    parser.errNo++;
 :};
 
-AndExpression ::= AndExpression:a1 AND RelExpression:a2
+AndExpression ::= AndExpression:e1 AND RelExpression:e2
 {:
     System.out.println("Smena 23");
+	if(e1.tkind != Type.BOOLEAN || e2.tkind != Type.BOOLEAN)
+	{
+		System.out.println("Greska u liniji "+parser.getLine()+": "+"Operandi u logickom izrazu mogu biti samo tipa boolean.");
+		parser.errNo++;
+	}
+	RESULT = parser.symbolTable.getType("boolean"); 
 :}
-| RelExpression
+| RelExpression:e
 {:
     System.out.println("Smena 24");
-:};
+	RESULT=e.type;
+:}
+| AndExpression AND error 
+{:
+   System.out.println( "Nedostaje RelExpression");
+    parser.errNo++;
+:}
+;
 
 RelExpression ::= Term:r1 RelOp Term:r2
 {:
@@ -244,7 +401,13 @@ RelExpression ::= Term:r1 RelOp Term:r2
 | Term:i
 {:
     RESULT = i;
-:};
+:}
+| Term RelOp error 
+{:
+   System.out.println( "Nedostaje term");
+    parser.errNo++;
+:}
+;
 
 RelOp ::= LT
 {:
@@ -273,7 +436,7 @@ RelOp ::= LT
 
 Term  ::= ID:ime
 {:
-	Variable var = parser.symbolTable.getVar( ime );
+	Variable var = parser.symbolTable.getVar( ime,parser.scope);
     if ( var == null )
     {
     	System.out.println( "Greska u liniji " + parser.getLine() +  ": promenljiva " + ime + " nije deklarisana.");
@@ -298,6 +461,16 @@ Term  ::= ID:ime
 | LEFTPAR Expression:i RIGHTPAR
 {:
 	RESULT = i;
+:}
+| LEFTPAR Expression error
+{:
+     System.out.println( "Nedostaje )");
+    parser.errNo++;
+:}
+| LEFTPAR  error
+{:
+     System.out.println( "Nedostaje Expression");
+    parser.errNo++;
 :};
 Konstanta ::= INTCONST:c
 {:

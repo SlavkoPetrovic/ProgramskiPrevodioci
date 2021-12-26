@@ -1,7 +1,5 @@
 package SymbolTable;
 
-import java.util.ArrayList;
-
 public class SymbolNode {
 	public static int TYPE = 0;
 	public static int VARIABLE = 1;

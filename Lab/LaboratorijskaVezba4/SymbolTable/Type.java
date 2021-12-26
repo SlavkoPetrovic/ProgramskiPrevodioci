@@ -1,11 +1,11 @@
 package SymbolTable;
 
 public class Type extends SymbolNode {
-	public static int INTEGER = 0;
+	public static int UNKNOWN = 0;
 	public static int CHARACTER = 1;
-	public static int BOOLEAN =2;
-	public static int DOUBLE =3 ;
-	public static int UNKNOWN = 4;
+	public static int INTEGER = 2;
+	public static int DOUBLE =3;
+	public static int BOOLEAN =4;
 	public int tkind;
 	
 	public Type ( String name, 
