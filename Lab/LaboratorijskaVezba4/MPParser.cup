@@ -83,7 +83,7 @@ init with
 :};
 
 // Terminali
-terminal PROGRAM, DOT, BEGIN, END, COLON, SEMICOLON, COMMA;
+terminal PROGRAM, DOT,INTEGER,BOOLEAN,REAL,CHAR, BEGIN, END, COLON, SEMICOLON, COMMA;
 terminal ASSIGN, SELECT, CASE, ARROW, OR, AND, LT, LE, EQ, NE, GT, GE;
 terminal CONST, LEFTPAR, RIGHTPAR;
 terminal Integer INTCONST;
@@ -123,35 +123,53 @@ Variables ::= Variables Declaration
 	System.out.println("Smena 4");
 :};
 
-Declaration ::= NameList COLON Tip SEMICOLON
+Declaration ::= NameList:niz COLON Tip:t SEMICOLON
 {:
     System.out.println("Smena 5");
+	for(int i = 0; i < niz.size(); i++)
+    {
+    	String ime = (String) niz.get(i);
+        if(!parser.symbolTable.addVar(ime, t))
+		{
+        	System.out.println("Greska u liniji "+parser.getLine()+": "+"Promenljiva "+ime+" je vec deklarisana.");
+            parser.errNo++;
+		}
+	}
+
 :};
 
-NameList ::= NameList COMMA ID
+NameList ::= NameList:niz COMMA ID:ime
 {:
     System.out.println("Smena 6");
+	RESULT = niz;
+	RESULT.add( ime );
 :}
-| ID
+| ID:ime
 {:
     System.out.println("Smena 7");
+	RESULT = new ArrayList();
+	RESULT.add( ime );
 :};
 
-Tip ::= INTCONST
+Tip ::= INTEGER
 {:
     System.out.println("Smena 8");
+	RESULT = parser.symbolTable.getType("integer");
 :}
-| CHARCONST
+| CHAR
 {:
     System.out.println("Smena 9");
+	RESULT = parser.symbolTable.getType("char");
 :}
-| REALCONST
+| REAL
 {:
     System.out.println("Smena 10");
+	RESULT = parser.symbolTable.getType("double");
 :}
-| BOOLCONST
+| BOOLEAN
 {:
     System.out.println("Smena 11");
+	RESULT = parser.symbolTable.getType("boolean");
 :};
 
 StatementList ::= Statement
@@ -204,7 +222,7 @@ Expression ::= Expression OR AndExpression
     System.out.println("Smena 22");
 :};
 
-AndExpression ::= AndExpression AND RelExpression
+AndExpression ::= AndExpression:a1 AND RelExpression:a2
 {:
     System.out.println("Smena 23");
 :}
@@ -213,13 +231,19 @@ AndExpression ::= AndExpression AND RelExpression
     System.out.println("Smena 24");
 :};
 
-RelExpression ::= Term RelOp Term
+RelExpression ::= Term:r1 RelOp Term:r2
 {:
     System.out.println("Smena 25");
+	if(r1.tkind == Type.BOOLEAN || r2.tkind == Type.BOOLEAN)
+	{
+		System.out.println("Greska u liniji "+parser.getLine()+": "+"Operandi mogu biti samo numerickog tipa");
+		parser.errNo++;
+	}
+	RESULT = parser.symbolTable.getType("boolean"); 
 :}
-| Term
+| Term:i
 {:
-    System.out.println("Smena 26");
+    RESULT = i;
 :};
 
 RelOp ::= LT
@@ -247,16 +271,47 @@ RelOp ::= LT
     System.out.println("Smena 32");
 :};
 
-Term  ::= ID
+Term  ::= ID:ime
 {:
-    System.out.println("Smena 33");
+	Variable var = parser.symbolTable.getVar( ime );
+    if ( var == null )
+    {
+    	System.out.println( "Greska u liniji " + parser.getLine() +  ": promenljiva " + ime + " nije deklarisana.");
+    	RESULT = parser.symbolTable.getType( "unknown" );
+        parser.errNo++;
+    }
+    else 
+    {
+    	RESULT = var.type;
+        if ( var.last_def == -1 )
+        {
+        	System.out.println( "Greska u liniji " + parser.getLine() + ": promenljiva " + ime + " nije inicijalizovana.");
+            parser.errNo++;
+        }
+     	var.last_use = parser.getLine();
+	}
 :}
-| CONST
+| Konstanta:k
 {:
-    System.out.println("Smena 34");
+	RESULT = k.type;
 :}
-| LEFTPAR Expression RIGHTPAR
+| LEFTPAR Expression:i RIGHTPAR
 {:
-    System.out.println("Smena 35");
+	RESULT = i;
 :};
-
+Konstanta ::= INTCONST:c
+{:
+	RESULT = new Constant(parser.symbolTable.getType( "integer" ),c);
+:}
+| CHARCONST:c
+{:
+	RESULT = new Constant(parser.symbolTable.getType( "char" ),c );
+:}
+| BOOLCONST:c
+{:
+	RESULT = new Constant(parser.symbolTable.getType( "boolean" ),c );
+:}
+| REALCONST:c
+{:
+	RESULT = new Constant(parser.symbolTable.getType( "real" ),c );
+:};

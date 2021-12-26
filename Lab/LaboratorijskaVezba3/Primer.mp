@@ -1,5 +1,5 @@
 program
 begin
 $i:integer;
-$i:=4;
+select begin case 5>3 => i:=4; end
 end.
