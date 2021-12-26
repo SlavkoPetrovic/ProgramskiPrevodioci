@@ -27,7 +27,9 @@ public class sym {
     public final static int GE = 23;
     public final static int SELECT = 24;
     public final static int ARROW = 25;
-/*	public final static int EOF = 0;
+ 	public final static int EOF = 0;
+    
+/*
 	public final static int VAR = 2;
 	public final static int READ = 7;
 	public final static int WRITE = 8;

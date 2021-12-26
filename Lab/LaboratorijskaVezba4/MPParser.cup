@@ -1,0 +1,262 @@
+import java_cup.runtime.*;
+import java.io.*;
+import java.util.ArrayList;
+
+import SymbolTable.*;
+
+parser code {:
+
+	public int errNo = 0;
+	public int warnNo = 0;
+	public int scope = 0;
+
+	SymbolTable symbolTable;
+
+	public static void main( String[] args )
+	{
+		try
+		{
+			FileReader file = new FileReader( args[0] );
+			Scanner scanner = new MPLexer( file );
+			MPParser parser = new MPParser( scanner );
+			parser.parse();
+			parser.checkWarnings();
+			System.out.println( "Analiza zavrsena." );
+			if ( parser.errNo == 0 )
+				System.out.println( "U kodu nema gresaka." );
+			else
+				System.out.println( "Broj gresaka: " + parser.errNo );
+			if( parser.warnNo == 0 )
+				System.out.println( "U kodu nema upozorenja." );
+			else
+				System.out.println( "Broj upozorenja: " + parser.warnNo );
+		}
+		catch( Exception e )
+		{
+			System.out.println(e);
+		}
+	}
+	
+	public void checkWarnings()
+	{
+		SymbolNode current = symbolTable.getVariables();
+		while(current != null)
+		{
+			Variable var = (Variable)current;
+			if(var.last_def == -1 && var.last_use == -1)
+			{
+				System.out.println("Upozorenje: Promenljiva "
+					+ var.name +
+					" je deklarisana, ali se ne koristi.");
+				warnNo++;
+			}
+			else if(var.last_def > var.last_use)
+			{
+				System.out.println("Upozorenje: Vrednost dodeljena promenljivoj "
+					+ var.name + " u liniji " + var.last_def +
+					" se nigde ne koristi.");
+				warnNo++;
+			}
+			current = current.next;
+		}
+	}
+	
+	public void syntax_error(Symbol cur_token)
+	{
+		
+	}
+
+	public void report_error(String message, Object info)
+	{
+		System.out.print( message );
+	}
+
+	public int getLine()
+	{
+		return (( MPLexer) getScanner()).getLine();
+	}
+:};
+
+init with
+{:
+	symbolTable = new SymbolTable();
+:};
+
+// Terminali
+terminal PROGRAM, DOT, BEGIN, END, COLON, SEMICOLON, COMMA;
+terminal ASSIGN, SELECT, CASE, ARROW, OR, AND, LT, LE, EQ, NE, GT, GE;
+terminal CONST, LEFTPAR, RIGHTPAR;
+terminal Integer INTCONST;
+terminal String ID;
+terminal Double REALCONST;
+terminal Character CHARCONST;
+terminal Boolean BOOLCONST;
+
+
+// Neterminali
+non terminal Program, Block, Variables, Declaration, StatementList, Statement, SelectStatement, CaseList, Case;
+non terminal RelOp;
+non terminal Type Tip, Expression, AndExpression, RelExpression, Term;
+non terminal ArrayList NameList;
+non terminal Constant Konstanta;
+
+
+
+
+// Gramatika
+Program ::= PROGRAM Block DOT 
+{:
+    System.out.println("Smena 1");
+:};
+
+Block ::= BEGIN Variables StatementList END
+{:
+    System.out.println("Smena 2");
+:};
+
+Variables ::= Variables Declaration
+{:
+    System.out.println("Smena 3");
+:}
+|
+{:
+	System.out.println("Smena 4");
+:};
+
+Declaration ::= NameList COLON Tip SEMICOLON
+{:
+    System.out.println("Smena 5");
+:};
+
+NameList ::= NameList COMMA ID
+{:
+    System.out.println("Smena 6");
+:}
+| ID
+{:
+    System.out.println("Smena 7");
+:};
+
+Tip ::= INTCONST
+{:
+    System.out.println("Smena 8");
+:}
+| CHARCONST
+{:
+    System.out.println("Smena 9");
+:}
+| REALCONST
+{:
+    System.out.println("Smena 10");
+:}
+| BOOLCONST
+{:
+    System.out.println("Smena 11");
+:};
+
+StatementList ::= Statement
+{:
+    System.out.println("Smena 12");
+:}
+| StatementList Statement
+{:
+    System.out.println("Smena 13");
+:};
+
+Statement ::= SelectStatement
+{:
+    System.out.println("Smena 14");
+:}
+| ID ASSIGN Expression SEMICOLON
+{:
+    System.out.println("Smena 15");
+:}
+| Block
+{:
+    System.out.println("Smena 16");
+:};
+
+SelectStatement ::= SELECT  BEGIN CaseList END 
+{:
+    System.out.println("Smena 17");
+:};
+
+CaseList ::= CaseList Case
+{:
+    System.out.println("Smena 18");
+:}
+| Case
+{:
+    System.out.println("Smena 19");
+:};
+
+Case ::= CASE Expression ARROW Statement
+{:
+    System.out.println("Smena 20");
+:};
+
+Expression ::= Expression OR AndExpression
+{:
+    System.out.println("Smena 21");
+:}
+| AndExpression
+{:
+    System.out.println("Smena 22");
+:};
+
+AndExpression ::= AndExpression AND RelExpression
+{:
+    System.out.println("Smena 23");
+:}
+| RelExpression
+{:
+    System.out.println("Smena 24");
+:};
+
+RelExpression ::= Term RelOp Term
+{:
+    System.out.println("Smena 25");
+:}
+| Term
+{:
+    System.out.println("Smena 26");
+:};
+
+RelOp ::= LT
+{:
+    System.out.println("Smena 27");
+:}
+| LE
+{:
+    System.out.println("Smena 28");
+:}
+| EQ
+{:
+    System.out.println("Smena 29");
+:}
+| NE
+{:
+    System.out.println("Smena 30");
+:}
+| GT
+{:
+    System.out.println("Smena 31");
+:}
+| GE
+{:
+    System.out.println("Smena 32");
+:};
+
+Term  ::= ID
+{:
+    System.out.println("Smena 33");
+:}
+| CONST
+{:
+    System.out.println("Smena 34");
+:}
+| LEFTPAR Expression RIGHTPAR
+{:
+    System.out.println("Smena 35");
+:};
+
